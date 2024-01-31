@@ -60,12 +60,12 @@ const deleteBookCtrl = async (req, res) => {
 const updateBookCtrl = async (req, res) => {
   const { id: bookId } = req.params;
   const { title, author, isbn } = req.body;
-
-  if (!title || !author || !isbn) return res.status(400).send("Missing values");
-  if (isbn.length !== 13 || isNaN(isbn))
-    return new CustomError(400, "ISBN must be 13 digits number");
-
   try {
+    if (!title || !author || !isbn)
+      throw new CustomError(400, "Missing values");
+    if (isbn.length !== 13 || isNaN(isbn))
+      throw new CustomError(400, "ISBN must be 13 digits number");
+
     await getBookById(bookId);
     const booksByIsbn = await getBooksByIsbn(isbn);
     if (booksByIsbn.length > 0) {
