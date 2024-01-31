@@ -1,85 +1,62 @@
-const { queryDb, client } = require("../utils/queryDb");
+const {
+  getBooks,
+  getAvailableBooks,
+  deleteBook,
+  addBook,
+  getBookById,
+  getBookByIsbn,
+  updateBook,
+} = require("../services/booksService");
+const { errorHandler, CustomError } = require("../utils/error");
 
-const getBooks = async (req, res) => {
+const getBooksCtrl = async (req, res) => {
   try {
-    const books = await queryDb(`SELECT * FROM books`, [], client);
-
-    res.status(200).json({ status: "success", data: books });
+    const booksData = await getBooks();
+    res.status(200).json({ status: "success", data: booksData });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
+    errorHandler(error, res);
+  }
+};
+const getAvailableBooksCtrl = async (req, res) => {
+  try {
+    const booksData = await getAvailableBooks();
+    res.status(200).json({ status: "success", data: booksData });
+  } catch (error) {
+    errorHandler(error, res);
   }
 };
 
-const getAvailableBooks = async (req, res) => {
-  try {
-    const books = await queryDb(
-      `SELECT * FROM books WHERE is_available=$1`,
-      ["TRUE"],
-      client
-    );
-    res.status(200).json({ status: "success", data: books });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
-};
-
-const addBook = async (req, res) => {
+const addBookCtrl = async (req, res) => {
   const { title, author, isbn } = req.body;
-
-  if (!title || !author || !isbn) return res.status(400).send("Missing values");
-  if (isbn.length !== 13 || isNaN(isbn))
-    return res.status(400).send("ISBN must be 13 digits number");
-
   try {
-    const usedIsbn = await queryDb(
-      `SELECT * FROM books WHERE isbn=$1`,
-      [isbn],
-      client
-    );
-    if (usedIsbn.length > 0) return res.status(400).send("ISBN is used");
+    if (!title || !author || !isbn) {
+      throw new CustomError(400, "Missing values");
+    }
 
-    await queryDb(
-      `INSERT INTO books(title, author, isbn, is_available) VALUES($1, $2, $3, $4)`,
-      [title, author, isbn, "TRUE"],
-      client
-    );
+    if (isbn.length !== 13 || isNaN(isbn)) {
+      throw new CustomError(400, "ISBN must be 13 digits number");
+    }
+    await getBookByIsbn(isbn);
 
-    res.status(200).send("Add book success");
+    await addBook(title, author, isbn);
+    res.status(200).json({ status: "success", message: "Add book success" });
   } catch (error) {
-    console.error(error);
-
-    res.status(500).send("Internal Server Error");
+    errorHandler(error, res);
   }
 };
 
-const deleteBook = async (req, res) => {
+const deleteBookCtrl = async (req, res) => {
   const { id: bookId } = req.params;
-
   try {
-    const isBookExist = await queryDb(
-      `SELECT * FROM books WHERE id=$1`,
-      [bookId],
-      client
-    );
-    if (isBookExist.length === 0) return res.status(400).send("Book not found");
+    await getBookById(bookId);
 
-    await queryDb(
-      `DELETE FROM transactions WHERE book_id=$1`,
-      [bookId],
-      client
-    );
-    await queryDb(`DELETE FROM books WHERE id=$1`, [bookId], client);
-
-    res.status(200).send("Delete book success");
+    await deleteBook(bookId);
+    res.status(200).json({ status: "success", message: "Delete book success" });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
+    errorHandler(error, res);
   }
 };
-
-const updateBook = async (req, res) => {
+const updateBookCtrl = async (req, res) => {
   const { id: bookId } = req.params;
   const { title, author, isbn } = req.body;
 
@@ -88,40 +65,20 @@ const updateBook = async (req, res) => {
     return res.status(400).send("ISBN must be 13 digits number");
 
   try {
-    const isBookExist = await queryDb(
-      `SELECT * FROM books WHERE id=$1`,
-      [bookId],
-      client
-    );
-    if (!isBookExist.length)
-      return res.status(400).send("ID is not used by any book");
+    await getBookById(bookId);
+    await getBookByIsbn(isbn);
 
-    const usedIsbn = await queryDb(
-      `SELECT * FROM books WHERE isbn=$1 AND id != $2`,
-      [isbn, bookId],
-      client
-    );
-
-    if (usedIsbn.length > 0)
-      return res.status(400).send("ISBN is already used");
-
-    await queryDb(
-      `UPDATE books SET title=$1, author=$2, isbn=$3 WHERE id=$4`,
-      [title, author, isbn, bookId],
-      client
-    );
-
-    res.status(200).send("Update book success");
+    updateBook(bookId, title, author, isbn);
+    res.status(200).json({ status: "success", message: "Update book success" });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
+    errorHandler(error, res);
   }
 };
 
 module.exports = {
-  addBook,
-  deleteBook,
-  updateBook,
-  getBooks,
-  getAvailableBooks,
+  addBookCtrl,
+  deleteBookCtrl,
+  updateBookCtrl,
+  getBooksCtrl,
+  getAvailableBooksCtrl,
 };

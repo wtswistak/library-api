@@ -1,9 +1,9 @@
 const {
-  addBook,
-  deleteBook,
-  updateBook,
-  getBooks,
-  getAvailableBooks,
+  addBookCtrl,
+  updateBookCtrl,
+  getBooksCtrl,
+  getAvailableBooksCtrl,
+  deleteBookCtrl,
 } = require("../controllers/booksController");
 const {
   borrowBook,
@@ -17,11 +17,11 @@ const {
 
 const router = require("express").Router();
 
-router.route("/add").post(verifyAdmin, addBook);
-router.route("/remove/:id").delete(verifyAdmin, deleteBook);
-router.route("/update/:id").put(verifyAdmin, updateBook);
-router.route("/").get(verifyToken, getBooks);
-router.route("/available").get(verifyToken, getAvailableBooks);
+router.route("/add").post(verifyAdmin, addBookCtrl);
+router.route("/remove/:id").delete(verifyAdmin, deleteBookCtrl);
+router.route("/update/:id").put(verifyAdmin, updateBookCtrl);
+router.route("/").get(verifyToken, getBooksCtrl);
+router.route("/available").get(verifyToken, getAvailableBooksCtrl);
 
 router.route("/borrow/:id").post(verifyUser, borrowBook);
 router.route("/return/:id").post(verifyUser, returnBook);
