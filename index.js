@@ -6,8 +6,8 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
-app.use("/api/v1/auth", require("./routes/authRoute"));
-app.use("/api/v1/books", require("./routes/booksRoute"));
+app.use("/api/v1/auth", require("./src/routes/authRoute"));
+app.use("/api/v1/books", require("./src/routes/booksRoute"));
 
 app.listen(3000, () => {
   console.log("Server is running at http://localhost:3000");
