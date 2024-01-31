@@ -3,16 +3,7 @@ const { prisma } = require("../utils/prisma");
 
 const addUser = async (username, password, isAdmin, name) => {
   try {
-    const isUsernameExist = await prisma.users.findUnique({
-      where: {
-        username,
-      },
-    });
-    if (isUsernameExist) {
-      throw new CustomError(400, "Username is taken");
-    }
-
-    const user = await prisma.users.create({
+    await prisma.users.create({
       data: {
         username,
         password,
@@ -20,7 +11,20 @@ const addUser = async (username, password, isAdmin, name) => {
         name,
       },
     });
-    console.log("User added:", user);
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getByUsername = async (username) => {
+  try {
+    const user = await prisma.users.findUnique({
+      where: {
+        username,
+      },
+    });
+
     return user;
   } catch (error) {
     throw error;
@@ -44,4 +48,5 @@ const getUser = async (username) => {
 module.exports = {
   addUser,
   getUser,
+  getByUsername,
 };
