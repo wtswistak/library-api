@@ -36,6 +36,19 @@ const getBookByIsbn = async (isbn) => {
     throw error;
   }
 };
+const getBooksByIsbn = async (isbn) => {
+  try {
+    const books = await prisma.books.findMany({
+      where: {
+        isbn: isbn,
+      },
+    });
+
+    return books;
+  } catch (error) {
+    throw error;
+  }
+};
 
 const getAvailableBooks = async () => {
   try {
@@ -60,6 +73,7 @@ const addBook = async (title, author, isbn) => {
         isAvailable: true,
       },
     });
+    return;
   } catch (error) {
     throw error;
   }
@@ -71,6 +85,7 @@ const deleteBook = async (bookId) => {
         id: Number(bookId),
       },
     });
+    return;
   } catch (error) {
     throw error;
   }
@@ -88,6 +103,7 @@ const updateBook = async (bookId, title, author, isbn) => {
         isbn: isbn,
       },
     });
+    return;
   } catch (error) {
     throw error;
   }
@@ -101,4 +117,5 @@ module.exports = {
   getBookById,
   updateBook,
   getBookByIsbn,
+  getBooksByIsbn,
 };
