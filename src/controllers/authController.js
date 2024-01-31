@@ -1,17 +1,21 @@
 const { createToken } = require("../middlewares/validateToken");
 const bcrypt = require("bcrypt");
-const { addUser, getUser } = require("../services/authService");
+const { addUser, getUser, getByUsername } = require("../services/authService");
 const { CustomError, errorHandler } = require("../utils/error");
+const passwordValidator = require("../utils/passwordValidator");
 
 const register = async (req, res, isAdmin) => {
+  const { username, password, name } = req.body;
   try {
-    const { username, password, name } = req.body;
-    if (!username || !password || !name) {
+    if (!username || !password || !name)
       throw new CustomError(400, "Missing values");
+
+    const user = await getByUsername(username);
+    if (user) throw new CustomError(400, "Username already exist");
+
+    if (!passwordValidator(password)) {
+      throw new CustomError(400, "Incorrect password");
     }
-    // if (password.length < 6) {
-    //   throw new ErrorHandler(400, "Password is too short");
-    // }
 
     const passwordCrypt = await bcrypt.hash(password, 10);
     await addUser(username, passwordCrypt, isAdmin, name);
@@ -29,23 +33,38 @@ const userRegister = async (req, res) => {
   await register(req, res, false);
 };
 
-const login = async (req, res) => {
+const login = async (req, res, isAdmin) => {
+  const { username, password } = req.body;
   try {
-    const { username, password } = req.body;
     if (!username || !password) {
       throw new CustomError(400, "Missing values");
     }
+
     const user = await getUser(username);
+    if (isAdmin && !user.isAdmin) {
+      throw new CustomError(400, "Access denied");
+    }
+    if (!isAdmin && user.isAdmin) {
+      throw new CustomError(400, "Access denied");
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new CustomError(400, "Invalid password");
     }
+
     const token = createToken(user.id, user.isAdmin);
     res.cookie("token", token, { httpOnly: true }).status(200);
-    res.send("Login success");
+    res.status(200).json({ status: "success", message: "Login success" });
   } catch (error) {
     errorHandler(error, res);
   }
 };
 
-module.exports = { adminRegister, userRegister, login };
+const userLogin = async (req, res) => {
+  await login(req, res, false);
+};
+const adminLogin = async (req, res) => {
+  await login(req, res, true);
+};
+module.exports = { adminRegister, userRegister, userLogin, adminLogin };
