@@ -12,16 +12,16 @@ const { errorHandler, CustomError } = require("../utils/error");
 
 const getBooksCtrl = async (req, res) => {
   try {
-    const booksData = await getBooks();
-    res.status(200).json({ status: "success", data: booksData });
+    const booksList = await getBooks();
+    res.status(200).json({ status: "success", data: booksList });
   } catch (error) {
     errorHandler(error, res);
   }
 };
 const getAvailableBooksCtrl = async (req, res) => {
   try {
-    const booksData = await getAvailableBooks();
-    res.status(200).json({ status: "success", data: booksData });
+    const availableBooksList = await getAvailableBooks();
+    res.status(200).json({ status: "success", data: availableBooksList });
   } catch (error) {
     errorHandler(error, res);
   }
