@@ -6,6 +6,7 @@ const {
   getBookById,
   getBookByIsbn,
   updateBook,
+  getBooksByIsbn,
 } = require("../services/booksService");
 const { errorHandler, CustomError } = require("../utils/error");
 
@@ -62,11 +63,16 @@ const updateBookCtrl = async (req, res) => {
 
   if (!title || !author || !isbn) return res.status(400).send("Missing values");
   if (isbn.length !== 13 || isNaN(isbn))
-    return res.status(400).send("ISBN must be 13 digits number");
+    return new CustomError(400, "ISBN must be 13 digits number");
 
   try {
     await getBookById(bookId);
-    await getBookByIsbn(isbn);
+    const booksByIsbn = await getBooksByIsbn(isbn);
+    if (booksByIsbn.length > 0) {
+      if (booksByIsbn[0].id !== Number(bookId)) {
+        throw new CustomError(400, "ISBN already exist");
+      }
+    }
 
     updateBook(bookId, title, author, isbn);
     res.status(200).json({ status: "success", message: "Update book success" });
