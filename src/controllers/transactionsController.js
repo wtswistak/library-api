@@ -18,7 +18,7 @@ const borrowBookCtrl = async (req, res) => {
     await updateAvailability(bookId, false);
 
     await borrowBook(bookId, userId);
-    res.json({ status: "success", message: "Borrow book success" });
+    res.status(200).json({ status: "success", message: "Borrow book success" });
   } catch (error) {
     errorHandler(error, res);
   }
@@ -40,7 +40,7 @@ const returnBookCtrl = async (req, res) => {
     await updateAvailability(bookId, true);
     await returnBook(bookId, userId, lastTransaction.id);
 
-    res.status(200).send("Return book success");
+    res.status(200).json({ status: "success", message: "Return book success" });
   } catch (error) {
     errorHandler(error, res);
   }
