@@ -2,12 +2,8 @@ const { CustomError } = require("../utils/error");
 const { prisma } = require("../utils/prisma");
 
 const getBooks = async () => {
-  try {
-    const books = await prisma.books.findMany();
-    return books;
-  } catch (error) {
-    throw error;
-  }
+  const books = await prisma.books.findMany();
+  return books;
 };
 const getBookById = async (bookId) => {
   try {
@@ -37,76 +33,56 @@ const getBookByIsbn = async (isbn) => {
   }
 };
 const getBooksByIsbn = async (isbn) => {
-  try {
-    const books = await prisma.books.findMany({
-      where: {
-        isbn: isbn,
-      },
-    });
+  const books = await prisma.books.findMany({
+    where: {
+      isbn: isbn,
+    },
+  });
 
-    return books;
-  } catch (error) {
-    throw error;
-  }
+  return books;
 };
 
 const getAvailableBooks = async () => {
-  try {
-    const books = await prisma.books.findMany({
-      where: {
-        isAvailable: true,
-      },
-    });
-    return books;
-  } catch (error) {
-    throw error;
-  }
+  const books = await prisma.books.findMany({
+    where: {
+      isAvailable: true,
+    },
+  });
+  return books;
 };
 
 const addBook = async (title, author, isbn) => {
-  try {
-    await prisma.books.create({
-      data: {
-        title: title,
-        author: author,
-        isbn: isbn,
-        isAvailable: true,
-      },
-    });
-    return;
-  } catch (error) {
-    throw error;
-  }
+  await prisma.books.create({
+    data: {
+      title: title,
+      author: author,
+      isbn: isbn,
+      isAvailable: true,
+    },
+  });
+  return;
 };
 const deleteBook = async (bookId) => {
-  try {
-    await prisma.books.delete({
-      where: {
-        id: Number(bookId),
-      },
-    });
-    return;
-  } catch (error) {
-    throw error;
-  }
+  await prisma.books.delete({
+    where: {
+      id: Number(bookId),
+    },
+  });
+  return;
 };
 
 const updateBook = async (bookId, title, author, isbn) => {
-  try {
-    await prisma.books.update({
-      where: {
-        id: Number(bookId),
-      },
-      data: {
-        title: title,
-        author: author,
-        isbn: isbn,
-      },
-    });
-    return;
-  } catch (error) {
-    throw error;
-  }
+  await prisma.books.update({
+    where: {
+      id: Number(bookId),
+    },
+    data: {
+      title: title,
+      author: author,
+      isbn: isbn,
+    },
+  });
+  return;
 };
 
 module.exports = {
